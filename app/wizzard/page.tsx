@@ -42,7 +42,7 @@ async function page() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {/* <CurrencyComboBox /> */}
+                    <CurrencyComboBox />
                 </CardContent>
             </Card>
             <Separator />
