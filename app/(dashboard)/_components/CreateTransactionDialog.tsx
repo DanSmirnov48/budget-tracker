@@ -9,9 +9,24 @@ import {
 } from "@/components/ui/dialog";
 import { TransactionType } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { ReactNode, useState } from "react";
+import {
+    CreateTransactionSchema,
+    CreateTransactionSchemaType,
+} from "@/schema/transaction";
+import { ReactNode, useCallback, useState } from "react";
 
 import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 interface Props {
     trigger: ReactNode;
@@ -20,6 +35,17 @@ interface Props {
 
 function CreateTransactionDialog({ trigger, type }: Props) {
     const [open, setOpen] = useState(false);
+
+    const form = useForm<CreateTransactionSchemaType>({
+        resolver: zodResolver(CreateTransactionSchema),
+        defaultValues: {
+            type,
+            date: new Date(),
+        },
+    });
+
+    const onSubmit = useCallback();
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{trigger}</DialogTrigger>
@@ -38,6 +64,40 @@ function CreateTransactionDialog({ trigger, type }: Props) {
                         transaction
                     </DialogTitle>
                 </DialogHeader>
+                <Form {...form}>
+                    <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+                        <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Description</FormLabel>
+                                    <FormControl>
+                                        <Input defaultValue={""} {...field} />
+                                    </FormControl>
+                                    <FormDescription>
+                                        Transaction description (optional)
+                                    </FormDescription>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="amount"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Amount</FormLabel>
+                                    <FormControl>
+                                        <Input defaultValue={0} type="number" {...field} />
+                                    </FormControl>
+                                    <FormDescription>
+                                        Transaction amount (required)
+                                    </FormDescription>
+                                </FormItem>
+                            )}
+                        />
+                    </form>
+                </Form>
             </DialogContent>
         </Dialog>
     );
