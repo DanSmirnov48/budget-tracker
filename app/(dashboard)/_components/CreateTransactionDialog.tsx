@@ -27,6 +27,7 @@ import {
     FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import CategoryPicker from "@/app/(dashboard)/_components/CategoryPicker";
 
 interface Props {
     trigger: ReactNode;
@@ -44,7 +45,16 @@ function CreateTransactionDialog({ trigger, type }: Props) {
         },
     });
 
-    const onSubmit = useCallback();
+    const handleCategoryChange = useCallback(
+        (value: string) => {
+            form.setValue("category", value);
+        },
+        [form]
+    );
+
+    const onSubmit = useCallback((values: CreateTransactionSchemaType) => { },
+        []
+    );
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -96,6 +106,27 @@ function CreateTransactionDialog({ trigger, type }: Props) {
                                 </FormItem>
                             )}
                         />
+
+                        <div className="flex items-center justify-between gap-2">
+                            <FormField
+                                control={form.control}
+                                name="category"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel>Category</FormLabel>
+                                        <FormControl>
+                                            <CategoryPicker
+                                                type={type}
+                                                onChange={handleCategoryChange}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Select a category for this transaction
+                                        </FormDescription>
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
                     </form>
                 </Form>
             </DialogContent>
