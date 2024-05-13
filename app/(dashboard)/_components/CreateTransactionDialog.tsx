@@ -45,12 +45,9 @@ function CreateTransactionDialog({ trigger, type }: Props) {
         },
     });
 
-    const handleCategoryChange = useCallback(
-        (value: string) => {
-            form.setValue("category", value);
-        },
-        [form]
-    );
+    const handleCategoryChange = useCallback((value: string) => {
+        form.setValue("category", value);
+    }, [form]);
 
     const onSubmit = useCallback((values: CreateTransactionSchemaType) => { },
         []

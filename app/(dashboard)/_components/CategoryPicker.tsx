@@ -46,13 +46,10 @@ function CategoryPicker({ type, onChange }: Props) {
         (category: Category) => category.name === value
     );
 
-    const successCallback = useCallback(
-        (category: Category) => {
-            setValue(category.name);
-            setOpen((prev) => !prev);
-        },
-        [setValue, setOpen]
-    );
+    const successCallback = useCallback((category: Category) => {
+        setValue(category.name);
+        setOpen((prev) => !prev);
+    },[setValue, setOpen]);
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
