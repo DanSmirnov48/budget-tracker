@@ -6,6 +6,8 @@ import { UserSettings } from "@prisma/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React, { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import HistoryPeriodSelector from "./HistoryPeriodSelector";
+import { useQuery } from "@tanstack/react-query";
 
 function History({ userSettings }: { userSettings: UserSettings }) {
     const [timeframe, setTimeframe] = useState<Timeframe>("month");
@@ -18,12 +20,28 @@ function History({ userSettings }: { userSettings: UserSettings }) {
         return GetFormatterForCurrency(userSettings.currency);
     }, [userSettings.currency]);
 
+    const { data } = useQuery({
+        queryKey: ["overview", "history", timeframe, period],
+        queryFn: () =>
+            fetch(`/api/history-data?timeframe=${timeframe}&year=${period.year}&month=${period.month}`)
+                .then((res) => res.json()),
+    });
+
+    const dataAvailable = data && data.length > 0;
+
     return (
         <div className="container">
             <h2 className="mt-12 text-3xl font-bold">History</h2>
             <Card className="col-span-12 mt-2 w-full">
                 <CardHeader className="gap-2">
                     <CardTitle className="grid grid-flow-row justify-between gap-2 md:grid-flow-col">
+                        <HistoryPeriodSelector
+                            period={period}
+                            setPeriod={setPeriod}
+                            timeframe={timeframe}
+                            setTimeframe={setTimeframe}
+                        />
+
                         <div className="flex h-10 gap-2">
                             <Badge
                                 variant={"outline"}
