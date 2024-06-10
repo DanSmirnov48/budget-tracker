@@ -8,6 +8,15 @@ import React, { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import HistoryPeriodSelector from "./HistoryPeriodSelector";
 import { useQuery } from "@tanstack/react-query";
+import SkeletonWrapper from "@/components/SkeletonWrapper";
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    ResponsiveContainer,
+    XAxis,
+    YAxis,
+} from "recharts";
 
 function History({ userSettings }: { userSettings: UserSettings }) {
     const [timeframe, setTimeframe] = useState<Timeframe>("month");
@@ -20,7 +29,7 @@ function History({ userSettings }: { userSettings: UserSettings }) {
         return GetFormatterForCurrency(userSettings.currency);
     }, [userSettings.currency]);
 
-    const { data } = useQuery({
+    const { data, isFetching } = useQuery({
         queryKey: ["overview", "history", timeframe, period],
         queryFn: () =>
             fetch(`/api/history-data?timeframe=${timeframe}&year=${period.year}&month=${period.month}`)
@@ -60,6 +69,99 @@ function History({ userSettings }: { userSettings: UserSettings }) {
                         </div>
                     </CardTitle>
                 </CardHeader>
+                <CardContent>
+                    <SkeletonWrapper isLoading={isFetching}>
+                        {dataAvailable && (
+                            <ResponsiveContainer width={"100%"} height={300}>
+                                <BarChart
+                                    height={300}
+                                    data={data}
+                                    barCategoryGap={5}
+                                >
+                                    <defs>
+                                        <linearGradient id="incomeBar" x1="0" y1="0" x2="0" y2="1">
+                                            <stop
+                                                offset={"0"}
+                                                stopColor="#10b981"
+                                                stopOpacity={"1"}
+                                            />
+                                            <stop
+                                                offset={"1"}
+                                                stopColor="#10b981"
+                                                stopOpacity={"0"}
+                                            />
+                                        </linearGradient>
+
+                                        <linearGradient id="expenseBar" x1="0" y1="0" x2="0" y2="1">
+                                            <stop
+                                                offset={"0"}
+                                                stopColor="#ef4444"
+                                                stopOpacity={"1"}
+                                            />
+                                            <stop
+                                                offset={"1"}
+                                                stopColor="#ef4444"
+                                                stopOpacity={"0"}
+                                            />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid
+                                        strokeDasharray="5 5"
+                                        strokeOpacity={"0.2"}
+                                        vertical={false}
+                                    />
+                                    <XAxis
+                                        stroke="#888888"
+                                        fontSize={12}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        padding={{ left: 5, right: 5 }}
+                                        dataKey={(data) => {
+                                            const { year, month, day } = data;
+                                            const date = new Date(year, month, day || 1);
+                                            if (timeframe === "year") {
+                                                return date.toLocaleDateString("default", {
+                                                    month: "long",
+                                                });
+                                            }
+                                            return date.toLocaleDateString("default", {
+                                                day: "2-digit",
+                                            });
+                                        }}
+                                    />
+                                    <YAxis
+                                        stroke="#888888"
+                                        fontSize={12}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
+                                    <Bar
+                                        dataKey={"income"}
+                                        label="Income"
+                                        fill="url(#incomeBar)"
+                                        radius={4}
+                                        className="cursor-pointer"
+                                    />
+                                    <Bar
+                                        dataKey={"expense"}
+                                        label="Expense"
+                                        fill="url(#expenseBar)"
+                                        radius={4}
+                                        className="cursor-pointer"
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        )}
+                        {!dataAvailable && (
+                            <Card className="flex h-[300px] flex-col items-center justify-center bg-background">
+                                No data for the selected period
+                                <p className="text-sm text-muted-foreground">
+                                    Try selecting a different period or adding new transactions
+                                </p>
+                            </Card>
+                        )}
+                    </SkeletonWrapper>
+                </CardContent>
             </Card>
         </div>
     )
