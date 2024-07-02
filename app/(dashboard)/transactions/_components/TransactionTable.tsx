@@ -27,6 +27,8 @@ import { columns } from "@/components/datatable/DatatableColumns";
 import { DataTableFacetedFilter } from "@/components/datatable/FacetedFilters";
 import { DataTableViewOptions } from "@/components/datatable/ColumnToggle";
 import { GetTransactionHistoryResponseType } from "@/app/api/transactions-history/route";
+import { download, generateCsv, mkConfig } from "export-to-csv";
+import { DownloadIcon } from "lucide-react";
 
 interface Props {
     from: Date;
@@ -34,6 +36,12 @@ interface Props {
 }
 
 const emptyData: any[] = [];
+
+const csvConfig = mkConfig({
+    fieldSeparator: ",",
+    decimalSeparator: ".",
+    useKeysAsHeaders: true,
+});
 
 function TransactionTable({ from, to }: Props) {
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -45,6 +53,11 @@ function TransactionTable({ from, to }: Props) {
             fetch(`/api/transactions-history?from=${DateToUTCDate(from)}&to=${DateToUTCDate(to)}`)
                 .then((res) => res.json()),
     });
+
+    const handleExportCSV = (data: any[]) => {
+        const csv = generateCsv(csvConfig)(data);
+        download(csvConfig)(csv);
+    };
 
     const table = useReactTable({
         data: history.data || emptyData,
@@ -96,6 +109,26 @@ function TransactionTable({ from, to }: Props) {
                     )}
                 </div>
                 <div className="flex flex-wrap gap-2">
+                    <Button
+                        variant={"outline"}
+                        size={"sm"}
+                        className="ml-auto h-8 lg:flex"
+                        onClick={() => {
+                            const data = table.getFilteredRowModel().rows.map((row) => ({
+                                category: row.original.category,
+                                categoryIcon: row.original.categoryIcon,
+                                description: row.original.description,
+                                type: row.original.type,
+                                amount: row.original.amount,
+                                formattedAmount: row.original.formattedAmount,
+                                date: row.original.date,
+                            }));
+                            handleExportCSV(data);
+                        }}
+                    >
+                        <DownloadIcon className="mr-2 h-4 w-4" />
+                        Export CSV
+                    </Button>
                     <DataTableViewOptions table={table} />
                 </div>
             </div>
