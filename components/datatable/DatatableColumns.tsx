@@ -1,10 +1,21 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
 import { DataTableColumnHeader } from "./ColumnHeader";
 import { GetTransactionHistoryResponseType } from "@/app/api/transactions-history/route";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "../ui/button";
+import { MoreHorizontal, TrashIcon } from "lucide-react";
+import DeleteTransactionDialog from "@/app/(dashboard)/transactions/_components/DeleteTransactionDialog";
 
 type TransactionHistoryRow = GetTransactionHistoryResponseType[0];
 
@@ -79,4 +90,45 @@ export const columns: ColumnDef<TransactionHistoryRow>[] = [
             </p>
         ),
     },
+    {
+        id: "actions",
+        enableHiding: false,
+        cell: ({ row }) => <RowActions transaction={row.original} />,
+    },
 ];
+
+
+function RowActions({ transaction }: { transaction: TransactionHistoryRow }) {
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+    return (
+        <>
+            <DeleteTransactionDialog
+                open={showDeleteDialog}
+                setOpen={setShowDeleteDialog}
+                transactionId={transaction.id}
+            />
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant={"ghost"} className="h-8 w-8 p-0 ">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                        className="flex items-center gap-2"
+                        onSelect={() => {
+                            setShowDeleteDialog((prev) => !prev);
+                        }}
+                    >
+                        <TrashIcon className="h-4 w-4 text-muted-foreground" />
+                        Delete
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
+    );
+}
